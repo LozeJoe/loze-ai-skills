@@ -1,0 +1,4 @@
+# Sensitive files - NEVER commit
+.github-token
+*.token
+.env
