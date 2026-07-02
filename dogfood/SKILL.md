@@ -13,12 +13,7 @@ metadata:
 
 ## Overview
 
-This skill guides you through systematic exploratory QA testing of web applications. Two approaches are available:
-
-1. **Browser-based testing** (Phase 2-5) — uses `browser_navigate`, `browser_snapshot`, `browser_click`, etc. for visual/interactive testing.
-2. **HTTP-level testing** — uses Python's `urllib.request` and `http.cookiejar` for fast route enumeration, security checks, and input fuzzing without a browser. See `references/http-testing-patterns.md` for reusable code snippets.
-
-Start with the HTTP-level sweep, then follow up with browser testing for visual/JS issues.
+This skill guides you through systematic exploratory QA testing of web applications using the browser toolset. You will navigate the application, interact with elements, capture evidence of issues, and produce a structured bug report.
 
 ## Prerequisites
 
@@ -155,75 +150,9 @@ Save the report to `{output_dir}/report.md`.
 | `browser_vision` | Screenshot + AI analysis; use `annotate=true` for element labels |
 | `browser_console` | Get JS console output and errors |
 
-## HTTP-Level Testing (No Browser Required)
-
-When browser tools are unavailable (debug port closed, no CDP connection), fall back to **pure HTTP testing** using Python's stdlib. This approach is faster for route enumeration, security checks, and input validation fuzzing — use it even when browser tools are available for the initial sweep.
-
-### Setup
-
-Use `execute_code` with Python's `urllib.request` and `http.cookiejar`:
-
-```python
-import urllib.request, urllib.parse, re, http.cookiejar
-
-base = 'http://localhost:PORT'
-
-# Session with cookies
-cj = http.cookiejar.CookieJar()
-opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-```
-
-### Route Enumeration
-
-Systematically test every route pattern. Test both the "correct" URL and common variations (the site may use a different pattern than what the navbar shows):
-
-```python
-routes = [
-    ('GET', '/'), ('GET', '/login'), ('POST', '/login'),
-    ('GET', '/detail?id=1'), ('GET', '/detail?id=999'),  # edge cases
-    ('GET', '/detail?id=-1'), ('GET', '/detail?id=abc'),
-]
-for method, path in routes:
-    try:
-        req = urllib.request.Request(f'{base}{path}', method=method)
-        r = urllib.request.urlopen(req, timeout=5)
-        # Check: status, size, title, error indicators
-    except urllib.error.HTTPError as e:
-        # e.code gives HTTP status
-```
-
-### Security Checks (HTTP Level)
-
-1. **CSRF protection**: grep login/register/payment forms for `_csrf`, `token`, `nonce`
-2. **Security headers**: check response headers for `X-Frame-Options`, `CSP`, `X-Content-Type-Options`, `X-XSS-Protection`, `HSTS`
-3. **Input validation fuzzing**: POST empty fields, negative numbers, SQLi payloads, XSS payloads
-4. **HTTP status code correctness**: non-existent resources should return 404 (not 200 with error page), forbidden resources should return 403 (not 404)
-5. **Auth redirect behavior**: logged-in users accessing `/login` should redirect to home, not show login form
-
-### Cart/Payment Flow Testing
-
-For e-commerce sites, test the full purchase flow programmatically:
-- Register → Login → Add to cart → Check cart → POST payment → Verify order
-- Fuzz payment endpoint with: empty fields, negative totals, SQLi, XSS
-- Check if `total` amount is client-supplied (hidden input) vs server-calculated
-
-### Common Findings to Check For
-
-- Missing CSRF tokens on state-changing forms
-- GET requests for mutations (addOne, subOne, deleteCart)
-- Quantity parameters accepting 0, -1, 999999, non-numeric
-- Payment accepting empty/negative/malicious input
-- Non-existent IDs returning 200 instead of 404
-- Login/register pages lacking navbar (dead-end UX)
-- Inconsistent URL naming (logout vs loginout, myOrder vs orderList)
-- All security headers absent
-- Hidden form fields for totals (client-tamperable)
-- Only 1 responsive breakpoint
-
 ## Tips
 
 - **Always check `browser_console()` after navigating and after significant interactions.** Silent JS errors are among the most valuable findings.
-- **Start with HTTP-level sweep before browser testing.** Route enumeration, security header checks, and input fuzzing are faster at the HTTP level and catch 60%+ of bugs before you open the browser.
 - **Use `annotate=true` with `browser_vision`** when you need to reason about interactive element positions or when the snapshot refs are unclear.
 - **Test with both valid and invalid inputs** — form validation bugs are common.
 - **Scroll through long pages** — content below the fold may have rendering issues.

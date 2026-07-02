@@ -32,25 +32,6 @@ Requires the codex CLI and a git repository.
 - **Must run inside a git repository** — Codex refuses to run outside one
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
 
-## Desktop GUI
-
-Codex has a desktop GUI app. Launch it with:
-
-```
-codex app [PATH]
-```
-
-- Opens the desktop GUI (installs the app shell on first run if missing)
-- On Windows: the npm-installed `codex.cmd` at `%APPDATA%\npm\codex.cmd` is the entry point
-- **Do NOT download standalone `.exe` files from GitHub Releases** — those are CLI binaries (require a terminal, exit with `stdin is not a terminal`), not a standalone desktop app
-- The desktop experience uses `codex-app-server` as a backend, launched automatically by `codex app`
-
-To check latest version before installing:
-```bash
-npm view @openai/codex version
-npm install -g @openai/codex@latest
-```
-
 For Hermes itself, `model.provider: openai-codex` uses Hermes-managed Codex
 OAuth from `~/.hermes/auth.json` after `hermes auth add openai-codex`. For the
 standalone Codex CLI, a valid CLI OAuth session may live under
@@ -93,18 +74,6 @@ process(action="kill", session_id="<id>")
 | `exec "prompt"` | One-shot execution, exits when done |
 | `--full-auto` | Sandboxed but auto-approves file changes in workspace |
 | `--yolo` | No sandbox, no approvals (fastest, most dangerous) |
-| `app` | Launch the Codex desktop GUI app (opens installer if missing) |
-
-### Launching Desktop GUI
-
-The GitHub Releases `.exe` files (`codex-x86_64-pc-windows-msvc.exe`, `codex-app-server-*.exe`) are CLI/TUI binaries, **not** desktop apps. To launch the actual desktop GUI:
-
-```bash
-codex app              # Opens desktop app in current directory
-codex app ~/project    # Opens with specific workspace
-```
-
-The desktop app is managed by the npm-installed `codex` CLI — no separate download needed.
 
 ## PR Reviews
 

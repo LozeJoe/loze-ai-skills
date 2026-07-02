@@ -46,13 +46,6 @@ for workflow execution.
   free-tier job, 1080p VRAM ceiling), Discord-compatible ffmpeg stitch.
   Authored by [@purzbeats](https://github.com/purzbeats). Load this whenever
   you're starting from an official template.
-- `comfyui-desktop-windows.md` — ComfyUI Desktop on Windows: install paths
-  (`D:\Comfy-Desktop\ComfyUI-Shared\models\`), CUDA driver requirements,
-  RTX 4060 8GB specifics, first-run checklist.
-- `blog-background-generation.md` — end-to-end REST API workflow for
-  generating blog hero/background images (SDXL txt2img → poll → retrieve).
-  Includes real prompt for warm Japanese illustration style, palette locking
-  with hex codes, and Windows agent integration notes.
 
 **Scripts (`scripts/`):**
 
@@ -603,31 +596,6 @@ python3 scripts/fetch_logs.py --tail-queue --host https://cloud.comfy.org
 11. **`tracking` prompt** — first run of `comfy` may prompt for analytics.
     Use `comfy --skip-prompt tracking disable` to skip non-interactively.
     `comfyui_setup.sh` does this for you.
-
-12. **China network — HuggingFace blocked** — direct `hf download` or
-    `huggingface_hub` downloads often time out from mainland China. Use
-    `comfy model download` (which respects `HF_ENDPOINT` env var) or set
-    `HF_ENDPOINT=https://hf-mirror.com` before any download. Even then,
-    `execute_code` has a 300s hard timeout and PowerShell MCP has a 60s
-    timeout — large models (5+ GB) will not finish inside those limits.
-    Use `terminal` with `background=true` and poll the output file, or
-    ask the user to download manually from a mirror.
-
-13. **comfy-cli workspace ≠ ComfyUI Desktop shared path** — `comfy model list`
-    may show models in the CLI's own workspace that are NOT visible to a
-    separately-launched ComfyUI Desktop server. Always verify what the
-    *running server* sees via `/api/object_info/CheckpointLoaderSimple`,
-    not just what `comfy model list` reports. Conversely, a model may
-    already be available server-side even when `comfy model list` shows
-    nothing — check the server first before attempting any download.
-
-14. **Windows agent workflow** — on Windows hosts where `terminal` runs
-    through WSL/MSYS, shell commands produce garbled output and `write_file`
-    may fail with encoding errors. For ComfyUI operations, use
-    `execute_code` with Python's `urllib.request` to call the REST API
-    (`/api/prompt`, `/api/queue`, `/api/history`, `/api/object_info`).
-    Use the Windows MCP `FileSystem` tool for writing files. The
-    `run_workflow.py` skill script also handles this correctly.
 
 ## Verification Checklist
 
